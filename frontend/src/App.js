@@ -10,7 +10,7 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/generate', { prompt });
+      const res = await axios.post('http://localhost:5000/image', { prompt });
       setResponse(res.data.text);
     } catch (error) {
       console.error('Error calling the backend API:', error);
