@@ -6,10 +6,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function sendImage() {
+async function sendImage(imageBase64) {
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    response_format: { "type": "json_object" },
     messages: [
       {
         role: "user",
@@ -18,7 +17,7 @@ async function sendImage() {
           {
             type: "image_url",
             image_url: {
-              "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1Oyr0HlFrONumSgfBkihwmJCJ2ynRuVmlZQ&s",
+              "url": "data:image/jpeg;base64," + imageBase64 
             },
           },
         ],
