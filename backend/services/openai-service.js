@@ -27,17 +27,6 @@ async function sendImage(imageBase64) {
   console.log(response.choices[0]);
 }
 
-async function sendCompletion(prompt) {
-  const response = await openai.chat.completions.create({
-    messages: [{ role: "system", content: prompt }],
-    model: "gpt-4o-mini",
-  });
-  
-  return response.choices[0].message.content.trim();
-}
-
-// Export the functions
 module.exports = {
   sendImage,
-  sendCompletion,
 };
