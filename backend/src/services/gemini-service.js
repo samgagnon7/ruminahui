@@ -12,6 +12,31 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
         'temperature': 1,
         'topP': 0.95,
     },
+    responseSchema: {
+        type: 'json_object',
+        properties: {
+            tiles: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        suit: { 
+                            type: 'string',
+                            enum: ['bamboo', 'character', 'dots']
+                        },
+                        value: {
+                            type: 'string',
+                            enum: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+                        }
+                    },
+                    required: ['suit', 'value']
+                },
+                minItems: 14,
+                maxItems: 14
+            }
+        },
+        required: ['tiles']
+    },
     safetySettings: [
         {
             'category': 'HARM_CATEGORY_HATE_SPEECH',
@@ -48,11 +73,17 @@ async function generateContent(imageBase64) {
 
     const streamingResp = await generativeModel.generateContentStream(req);
 
+    let bestResult = '';
     for await (const item of streamingResp.stream) {
-        process.stdout.write('stream chunk: ' + JSON.stringify(item) + '\n');
+        if (item.candidates && item.candidates[0] && item.candidates[0].content) {
+            bestResult = item.candidates[0].content.parts[0].text;
+            console.log(item.candidates[0].content.parts[0]);
+        }
     }
 
-    process.stdout.write('aggregated response: ' + JSON.stringify(await streamingResp.response));
+    console.log(bestResult);
+
+    return bestResult;
 }
 
 module.exports = {

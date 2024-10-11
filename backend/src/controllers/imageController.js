@@ -4,6 +4,7 @@ const geminiService = require('../services/gemini-service');
 const postImage = async (req, res) => {
     const imageBase64 = req.body.image;
     try {
+      console.log("received image");
     const text = await geminiService.generateContent(imageBase64);
     
       res.json({ text: text });
