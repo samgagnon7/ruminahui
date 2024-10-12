@@ -1,5 +1,4 @@
-const openaiService = require('../services/openai-service');
-const geminiService = require('../services/gemini-service');
+const geminiService = require('../services/gemini-service.ts');
 
 const postImage = async (req, res) => {
     const imageBase64 = req.body.image;

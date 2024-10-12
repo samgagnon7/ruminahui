@@ -57,7 +57,11 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
     ],
 });
 
-export async function generateContent(imageBase64: string) {
+interface GenerateContentInput {
+  imageBase64: string;
+}
+
+async function generateContent({ imageBase64 }: GenerateContentInput) {
     const image1 = {
         inlineData: {
             mimeType: 'image/png',
@@ -77,13 +81,19 @@ export async function generateContent(imageBase64: string) {
     for await (const item of streamingResp.stream) {
         if (item.candidates && item.candidates[0] && item.candidates[0].content) {
             bestResult = item.candidates[0].content.parts[0].text;
-            console.log(item.candidates[0].content.parts[0]);
         }
     }
 
-    console.log(bestResult);
+    let jsonResult;
+    try {
+        console.log(bestResult);
+        jsonResult = JSON.parse(bestResult);
+    } catch (error) {
+        console.error('Error parsing JSON:', error);
+        jsonResult = { error: 'Failed to parse JSON result' };
+    }
 
-    return bestResult;
+    return jsonResult;
 }
 
 module.exports = {
