@@ -57,45 +57,58 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
     ],
 });
 
-interface GenerateContentInput {
-  imageBase64: string;
-}
+class GeminiService {
+    private generativeModel: any;  // Define the type if you know what it is
 
-async function generateContent({ imageBase64 }: GenerateContentInput) {
-    const image1 = {
-        inlineData: {
-            mimeType: 'image/png',
-            data: imageBase64,
-        }
-    };
-
-    const req = {
-        contents: [
-            { role: 'user', parts: [image1, { text: `Extract the mahjong combinations and suits and output them in JSON.` }] }
-        ],
-    };
-
-    const streamingResp = await generativeModel.generateContentStream(req);
-
-    let bestResult = '';
-    for await (const item of streamingResp.stream) {
-        if (item.candidates && item.candidates[0] && item.candidates[0].content) {
-            bestResult = item.candidates[0].content.parts[0].text;
-        }
+    constructor(generativeModel: any) {
+        this.generativeModel = generativeModel;
     }
 
-    let jsonResult;
-    try {
-        console.log(bestResult);
-        jsonResult = JSON.parse(bestResult);
-    } catch (error) {
-        console.error('Error parsing JSON:', error);
-        jsonResult = { error: 'Failed to parse JSON result' };
+    async generateContent(imageBase64: string): Promise<any> {
+        const image1 = {
+            inlineData: {
+                mimeType: 'image/png',
+                data: imageBase64,
+            },
+        };
+
+        const req = {
+            contents: [
+                {
+                    role: 'user',
+                    parts: [
+                        image1,
+                        { text: 'Extract the mahjong combinations and suits and output them in JSON.' },
+                    ],
+                },
+            ],
+        };
+
+        const streamingResp = await generativeModel.generateContentStream(req);
+
+        let bestResult = '';
+
+        // Loop through the streaming response and break on the first valid result
+        for await (const item of streamingResp.stream) {
+            if (item?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                bestResult = item.candidates[0].content.parts[0].text;
+                break;  // Stop at the first valid result
+            }
+        }
+
+        // Attempt to parse the result
+        let jsonResult;
+        try {
+            console.log('Raw Response:', bestResult);
+            jsonResult = JSON.parse(bestResult);  // Parse the first valid result into JSON
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            jsonResult = { error: 'Failed to parse JSON result' };  // Return an error object if parsing fails
+        }
+
+        return jsonResult;  // Return the parsed JSON or error object
     }
 
-    return jsonResult;
 }
 
-module.exports = {
-    generateContent,
-};
+export const geminiService = new GeminiService();

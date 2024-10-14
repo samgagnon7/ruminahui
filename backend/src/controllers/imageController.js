@@ -1,4 +1,4 @@
-const geminiService = require('../services/gemini-service.ts');
+const geminiService = require('../services/geminiService.ts');
 
 const postImage = async (req, res) => {
     const imageBase64 = req.body.image;
