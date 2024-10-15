@@ -1,68 +1,65 @@
 const { VertexAI } = require('@google-cloud/vertexai');
+import { IGeminiService } from './IGeminiService';
 
-// Initialize Vertex with your Cloud project and location
-const vertex_ai = new VertexAI({ project: 'vision-430712', location: 'us-central1' });
-const model = 'gemini-1.5-flash-001';
+class GeminiService implements IGeminiService {
+    private vertexAIClient: any;
+    private generativeModel: any;
 
-// Instantiate the models
-const generativeModel = vertex_ai.preview.getGenerativeModel({
-    model: model,
-    generationConfig: {
-        'maxOutputTokens': 8192,
-        'temperature': 1,
-        'topP': 0.95,
-    },
-    responseSchema: {
-        type: 'json_object',
-        properties: {
-            tiles: {
-                type: 'array',
-                items: {
-                    type: 'object',
-                    properties: {
-                        suit: { 
-                            type: 'string',
-                            enum: ['bamboo', 'character', 'dots']
+    // Constructor
+  constructor() {
+    this.vertexAIClient = new VertexAI({ project: 'vision-430712', location: 'us-central1' });
+    this.generativeModel = this.vertexAIClient.preview.getGenerativeModel({
+        model: 'gemini-1.5-flash-001',
+        generationConfig: {
+            'maxOutputTokens': 8192,
+            'temperature': 1,
+            'topP': 0.95,
+        },
+        responseSchema: {
+            type: 'json_object',
+            properties: {
+                tiles: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            suit: { 
+                                type: 'string',
+                                enum: ['bamboo', 'character', 'dots']
+                            },
+                            value: {
+                                type: 'string',
+                                enum: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+                            }
                         },
-                        value: {
-                            type: 'string',
-                            enum: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-                        }
+                        required: ['suit', 'value']
                     },
-                    required: ['suit', 'value']
-                },
-                minItems: 14,
-                maxItems: 14
+                    minItems: 14,
+                    maxItems: 14
+                }
+            },
+            required: ['tiles']
+        },
+        safetySettings: [
+            {
+                'category': 'HARM_CATEGORY_HATE_SPEECH',
+                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
+            },
+            {
+                'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
+            },
+            {
+                'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
+            },
+            {
+                'category': 'HARM_CATEGORY_HARASSMENT',
+                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
             }
-        },
-        required: ['tiles']
-    },
-    safetySettings: [
-        {
-            'category': 'HARM_CATEGORY_HATE_SPEECH',
-            'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
-        },
-        {
-            'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
-        },
-        {
-            'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
-        },
-        {
-            'category': 'HARM_CATEGORY_HARASSMENT',
-            'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
-        }
-    ],
-});
-
-class GeminiService {
-    private generativeModel: any;  // Define the type if you know what it is
-
-    constructor(generativeModel: any) {
-        this.generativeModel = generativeModel;
-    }
+        ],
+    });
+  }
 
     async generateContent(imageBase64: string): Promise<any> {
         const image1 = {
@@ -84,7 +81,7 @@ class GeminiService {
             ],
         };
 
-        const streamingResp = await generativeModel.generateContentStream(req);
+        const streamingResp = await this.generativeModel.generateContentStream(req);
 
         let bestResult = '';
 
@@ -111,4 +108,4 @@ class GeminiService {
 
 }
 
-export const geminiService = new GeminiService();
+export { GeminiService };

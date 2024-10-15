@@ -4,7 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "npx tsc && node src/index.ts",
-    "test": "mocha -r ts-node/register 'src/**/*.test.ts'"
+    "test": "ts-mocha -p tsconfig.json 'src/**/*.test.ts'"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,9 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/mocha": "^10.0.9",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   }
 }
