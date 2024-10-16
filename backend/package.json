@@ -2,9 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
-    "start": "npx tsc && node src/index.ts",
-    "test": "ts-mocha -p tsconfig.json 'src/**/*.test.ts'"
+    "start": "npx tsx src/index.ts",
+    "test": "mocha"
   },
   "keywords": [],
   "author": "",
@@ -12,15 +13,21 @@
   "description": "",
   "dependencies": {
     "@google-cloud/vertexai": "^1.5.0",
+    "@types/ajv": "^0.0.5",
+    "ajv": "^8.17.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "openai": "^4.52.7"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.20",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/mocha": "^10.0.9",
-    "ts-mocha": "^10.0.0",
+    "@types/node": "^22.7.5",
+    "chai": "^5.1.1",
+    "mocha": "^10.7.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   }

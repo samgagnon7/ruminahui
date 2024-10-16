@@ -1,20 +1,26 @@
-const { VertexAI } = require('@google-cloud/vertexai');
+import { VertexAI } from '@google-cloud/vertexai';
 import { IGeminiService } from './IGeminiService';
+import { IMahjongHandValidator } from '../validators/IMahjongHandValidator';
+import { MahjongHand } from '../models/MahjongHand';
+import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
+
+
 
 class GeminiService implements IGeminiService {
-    private vertexAIClient: any;
-    private generativeModel: any;
+    private vertexAIClient;
+    private generativeModel;
+    private mahjongHandValidator: IMahjongHandValidator;
 
-    // Constructor
-  constructor() {
-    this.vertexAIClient = new VertexAI({ project: 'vision-430712', location: 'us-central1' });
-    this.generativeModel = this.vertexAIClient.preview.getGenerativeModel({
+    constructor(mahjongHandValidator: IMahjongHandValidator) {
+        this.vertexAIClient = new VertexAI({ project: 'vision-430712', location: 'us-central1' });
+        this.generativeModel = this.vertexAIClient.preview.getGenerativeModel({
         model: 'gemini-1.5-flash-001',
         generationConfig: {
             'maxOutputTokens': 8192,
             'temperature': 1,
             'topP': 0.95,
         },
+        // @ts-ignore
         responseSchema: {
             type: 'json_object',
             properties: {
@@ -25,7 +31,7 @@ class GeminiService implements IGeminiService {
                         properties: {
                             suit: { 
                                 type: 'string',
-                                enum: ['bamboo', 'character', 'dots']
+                                enum: ['bamboo', 'character', 'dots', 'honors']
                             },
                             value: {
                                 type: 'string',
@@ -34,34 +40,35 @@ class GeminiService implements IGeminiService {
                         },
                         required: ['suit', 'value']
                     },
-                    minItems: 14,
+                    minItems: 13,
                     maxItems: 14
                 }
             },
             required: ['tiles']
         },
         safetySettings: [
-            {
-                'category': 'HARM_CATEGORY_HATE_SPEECH',
-                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
+            {   
+                category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
             },
             {
-                'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
+                category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
             },
             {
-                'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
+                category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
             },
             {
-                'category': 'HARM_CATEGORY_HARASSMENT',
-                'threshold': 'BLOCK_MEDIUM_AND_ABOVE'
+                category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
             }
         ],
     });
+    this.mahjongHandValidator = mahjongHandValidator;
   }
 
-    async generateContent(imageBase64: string): Promise<any> {
+    async generateContent(imageBase64: string): Promise<MahjongHand> {
         const image1 = {
             inlineData: {
                 mimeType: 'image/png',
@@ -85,15 +92,13 @@ class GeminiService implements IGeminiService {
 
         let bestResult = '';
 
-        // Loop through the streaming response and break on the first valid result
         for await (const item of streamingResp.stream) {
             if (item?.candidates?.[0]?.content?.parts?.[0]?.text) {
                 bestResult = item.candidates[0].content.parts[0].text;
-                break;  // Stop at the first valid result
+                break;
             }
         }
 
-        // Attempt to parse the result
         let jsonResult;
         try {
             console.log('Raw Response:', bestResult);
@@ -103,7 +108,13 @@ class GeminiService implements IGeminiService {
             jsonResult = { error: 'Failed to parse JSON result' };  // Return an error object if parsing fails
         }
 
-        return jsonResult;  // Return the parsed JSON or error object
+        if (this.mahjongHandValidator.validateHand(jsonResult)) {
+            return jsonResult;
+        } else {
+            console.log('Invalid hand');
+            throw new Error('Invalid hand');
+        }
+
     }
 
 }

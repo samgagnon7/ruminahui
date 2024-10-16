@@ -1,5 +1,5 @@
 interface IGeminiService {
-    generateContent(imageBase64: string): Promise<any>;
+    generateContent(imageBase64: string): Promise<MahjongHand>;
 }
 
 export { IGeminiService };

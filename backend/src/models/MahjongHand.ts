@@ -11,3 +11,5 @@ interface MahjongHand {
     }[];
     concealed: MahjongTile[];
 }
+
+export type { MahjongHand, MahjongTile };

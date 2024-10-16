@@ -1,22 +1,18 @@
 {
-  "compilerOptions": {
-      "module": "commonjs",
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "target": "es6",
-      "noImplicitAny": true,
-      "moduleResolution": "node",
-      "sourceMap": true,
-      "outDir": "dist",
-      "baseUrl": ".",
-      "paths": {
-          "*": [
-              "node_modules/*",
-              "src/types/*"
-          ]
-      }
-  },
-  "include": [
-      "src/**/*"
-  ]
-}
+    "compilerOptions": {
+      "target": "ES2020",               // Compile to a modern version of JavaScript that supports ESM
+      "module": "ESNext",               // Use ESM module system
+      "moduleResolution": "node",       // Resolve modules like Node.js
+      "esModuleInterop": true,          // Allows CommonJS modules to be used in ESM code
+      "skipLibCheck": true,             // Skip type checking of declaration files
+      "forceConsistentCasingInFileNames": true,  // Ensure consistent file casing
+      "strict": true,                   // Enable all strict type-checking options
+      "outDir": "./dist",               // Output directory for compiled JS
+      "rootDir": "./src",               // Root directory of source TS files
+      "sourceMap": true,                // Enable source maps for debugging
+      "resolveJsonModule": true,        // Allow importing JSON files as modules
+      "isolatedModules": true           // Ensure that each file can be safely transpiled independently
+    },
+    "include": ["src/**/*.ts", "src/**/*.test.ts"],          // Include all .ts files under the src directory
+    "exclude": ["node_modules"]          // Exclude node_modules from compilation
+  }
