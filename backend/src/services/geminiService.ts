@@ -4,8 +4,6 @@ import { IMahjongHandValidator } from '../validators/IMahjongHandValidator';
 import { MahjongHand } from '../models/MahjongHand';
 import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
 
-
-
 class GeminiService implements IGeminiService {
     private vertexAIClient;
     private generativeModel;
