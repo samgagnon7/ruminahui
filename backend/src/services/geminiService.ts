@@ -86,16 +86,12 @@ class GeminiService implements IGeminiService {
             ],
         };
 
-        const streamingResp = await this.generativeModel.generateContentStream(req);
-
-        let bestResult = '';
-
-        for await (const item of streamingResp.stream) {
-            if (item?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                bestResult = item.candidates[0].content.parts[0].text;
-                break;
-            }
-        }
+        const streamingResult = await this.generativeModel.generateContentStream(req);
+        
+        const response = await streamingResult.response;
+        var responseText = response.candidates?.[0]?.content?.parts?.[0]?.text!;
+        console.log('aggregated response: ', JSON.stringify(responseText));
+        const bestResult = this.trimResponseToJson(responseText);
 
         let jsonResult;
         try {
@@ -112,9 +108,14 @@ class GeminiService implements IGeminiService {
             console.log('Invalid hand');
             throw new Error('Invalid hand');
         }
-
     }
 
+    trimResponseToJson(promptResponse: string): string {
+        const jsonStart = promptResponse.indexOf('[');
+        const jsonEnd = promptResponse.lastIndexOf(']') + 1;
+        console.log(promptResponse.slice(jsonStart, jsonEnd));
+        return promptResponse.slice(jsonStart, jsonEnd);
+    }
 }
 
 export { GeminiService };
