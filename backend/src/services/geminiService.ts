@@ -15,7 +15,7 @@ class GeminiService implements IGeminiService {
         model: 'gemini-1.5-flash-001',
         generationConfig: {
             'maxOutputTokens': 8192,
-            'temperature': 1,
+            'temperature': 0,
             'topP': 0.95,
         },
         // @ts-ignore
